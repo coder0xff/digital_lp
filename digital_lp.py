@@ -1,3 +1,13 @@
+"""digital_lp.py: A Python module to generate and play a modulated digital
+   audio signal suitable for vinyl LP records. The output file name is the
+   same as the input file name with '.wav' appended.
+
+Usage:
+
+    python digital_lp.py [input_file]
+    If no input_file is specified, the default data is "Hello, world!"
+"""
+
 import sys
 from functools import cache
 from typing import List
