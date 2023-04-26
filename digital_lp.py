@@ -10,10 +10,10 @@ from scipy.signal import lfilter
 # samples per second, 96000 is commonly supported
 sample_rate = 96000
 
-# duration of the handshake sound in seconds
+# duration of the preamble sound in seconds
 preamble_duration = .02
 
-# Frequency bands for the handshake
+# Frequency bands for the preamble
 preamble = [440 * n for n in range(1, 28, 1)]
 
 # Vinyl records have a frequency response of about 20 Hz to 20 kHz, with most
@@ -35,8 +35,8 @@ n = 255  # Number of data bytes
 k = 223  # Number of data bytes that can be recovered from n bytes of data
 
 
-def generate_handshake(sample_rate: int, duration: float, frequencies: List[float]) -> np.ndarray:
-    """Mix sine waves to generate a handshake signal.
+def generate_preamble(sample_rate: int, duration: float, frequencies: List[float]) -> np.ndarray:
+    """Mix sine waves to generate a preamble signal.
 
     Args:
         sample_rate (int): The sampling rate of the wave, in Hz.
@@ -44,7 +44,7 @@ def generate_handshake(sample_rate: int, duration: float, frequencies: List[floa
         frequencies (list): A list of frequencies, in Hz, to mix together.
 
     Returns:
-        (np.ndarray): A numpy array of shape (n_samples,), representing the handshake signal.
+        (np.ndarray): A numpy array of shape (n_samples,), representing the preamble signal.
     """
 
     samples = np.arange(sample_rate * duration)
@@ -222,7 +222,7 @@ def play_signal(signal, sample_rate):
 
 
 if __name__ == "__main__":
-    handshake_signal = generate_handshake(sample_rate, preamble_duration, preamble)
+    preamble_signal = generate_preamble(sample_rate, preamble_duration, preamble)
 
     if len(sys.argv) == 1:
         data = b"Hello, world!"
@@ -241,13 +241,13 @@ if __name__ == "__main__":
     # Generate the QPSK modulated signal
     signal = qpsk_modulate(data, sample_rate, bit_rate, carrier_frequency)
 
-    # signal = raised_cosine_filter(signal, sample_rate // bit_rate, roll_off, filter_span)
+    # Prepend the preamble to the data
+    signal = np.concatenate((preamble_signal, signal))
 
-    signal = np.concatenate((handshake_signal, signal))
-
+    # Boost the highs
     signal = preemphasis_filter(signal)
 
-    # Normalize the filtered signal
+    # Normalize the signal
     signal = signal / np.max(np.abs(signal))
 
     # Convert to 16-bit PCM
